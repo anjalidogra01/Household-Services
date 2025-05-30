@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Profile - HomeEase
+{% endblock %}
+
+{% block content %}
+
+<div>{% include 'messages.html' %}</div>
+
+<div class="container border mt-5 p-5">
+    <h1 class="primary">{{ customer.name }}</h1>
+    <p class='text-white'><strong>Username :</strong> {{ customer.username }}</p>
+    <p class='text-white'><strong>Date Created :</strong> {{ customer.date_created }}</p>
+    <p class='text-white'><strong>Address :</strong> {{ customer.address }}</p>
+    <p class='text-white'><strong>Pincode :</strong> {{ customer.pincode }}</p>
+    <p class='text-white'><strong>Phone no. :</strong> {{ customer.phone_no }}</p>
+    
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('edit_customer_profile') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username:</label>
+                        <input type="text" class="form-control" name="username" value="{{ customer.username }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="phone_no" class="form-label">Phone number:</label>
+                        <input type="number" class="form-control" name="phone_no" id="phone_no" value="{{ customer.phone_no }}" required>
+                      </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address:</label>
+                        <input type="text" class="form-control" name="address" value="{{ customer.address }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pincode" class="form-label">Pincode:</label>
+                        <input type="text" class="form-control" name="pincode" value="{{ customer.pincode }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

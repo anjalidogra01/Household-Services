@@ -1,0 +1,349 @@
+{% extends 'base.html' %} {% block title %} Customer{% endblock %} {% block
+style %} {{ super() }}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/customer_dashboard.css') }}"
+/>
+{% endblock %}
+{% block content %}
+<div>{% include 'messages.html' %}</div>
+<div class="container">
+  <h2 class="text-center text-white fw-bold mt-4 mb-2">Looking For?</h2>
+
+  <div class="row justify-content-center">
+    {% for service in services %}
+    {%if service.status=='Active'%}
+    <div class="col-6 col-md-3 mb-3">
+      <div
+        class="card"
+        data-bs-toggle="modal"
+        data-bs-target="#serviceModal{{ service.id }}"
+        data-service-name="{{ service.service_name }}"
+        data-service-description="{{ service.description }}"
+      >
+        <img
+          src="{{ url_for('static', filename='images/' + service.image_url) }}"
+          alt="{{ service.service_name }}"
+          class="img-fluid mb-3"
+          style="max-height: 150px; object-fit: cover"
+        />
+
+        <span class="fw-bold">{{ service.service_name }}</span>
+        <p>{{ service.service_description }}</p>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="serviceModal{{ service.id }}"
+      tabindex="-1"
+      aria-labelledby="serviceModalLabel{{ service.id }}"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog custom-modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="serviceModalLabel{{ service.id }}">
+              {{ service.service_name }}
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-striped table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">S.no</th>
+                  <th scope="col">Professional name</th>
+                  <th scope="col">Professional profile</th>
+                  <th scope="col">Service_Description</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Rating</th>
+                  <th scope="col">Book</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for professional in professionals %} {% if
+                professional.service_id == service.id and professional.status ==
+                "Approved" %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ professional.name }}</td>
+                  <td><a  href="{{ url_for('profile', professional_id = professional.id)}}">View profile</a>
+                  </li></td>
+                  <td>{{ professional.description }}</td>
+                  <td>{{ professional.price }}</td>
+                  <td>{{ professional.rating }}</td>
+
+                  <td>
+                    <form
+                      action="{{ url_for('book_service') }}"
+                      method="POST"
+                      onsubmit="return confirm('Are you sure you want to book this service?');"
+                    >
+                      <input
+                        type="hidden"
+                        name="service_id"
+                        value="{{ service.id }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="professional_id"
+                        value="{{ professional.id }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="customer_id"
+                        value="{{ customer.id }}"
+                      />
+                      <label for="start_date" class="col-form-label"
+                        >Start Date:</label
+                      >
+                      <input type="date" name="start_date" id="start_date" />
+                      <button type="submit" class="btn btn-danger">Book</button>
+                    </form>
+                  </td>
+                </tr>
+
+                {% endif %} {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {%endif%}
+    {% endfor %}
+  </div>
+</div>
+
+<h2 class="text-center text-white fw-bold">Service History</h2>
+<div class="container">
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Service Name</th>
+        <th scope="col">Professional Name</th>
+        <th scope="col">Phone No.</th>
+        <th scope="col">Start Date</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in requests %}
+      {% if request.customer_id == customer.id and request.professional.status=='Approved'%}
+      <tr>
+        <td>{{ request.req_id }}</td>
+        <td>{{ request.service.service_name }}</td>
+        <td>{{ request.professional.name }}</td>
+        <td>{{ request.professional.phone_no }}</td>
+        <td>{{ request.start_date }}</td>
+        <td>
+          <em>{{ request.service_status }}</em>
+          {% if request.service_status == "Accepted" %}
+          <em>
+            |
+            <button
+              class="btn btn-success"
+              data-bs-toggle="modal"
+              data-bs-target="#closeService{{ request.req_id }}"
+            >
+              Close it
+            </button>
+          </em>
+          {% elif request.service_status == "Requested" %}
+          <em>
+            |
+            <button
+              class="btn btn-success"
+              data-bs-toggle="modal"
+              data-bs-target="#editService{{ request.req_id }}"
+            >
+              Edit
+            </button>
+          </em>
+
+          {% elif request.service_status == "Closed" %}
+          <em>
+            |
+            <button
+              class="btn btn-success"
+              data-bs-toggle="modal"
+              data-bs-target="#editRemarks{{ request.req_id }}"
+            >
+              Edit Remarks
+            </button>
+          </em>
+          {% endif %}
+        </td>
+      </tr>
+
+      <!-- Close Modal -->
+      <div
+        class="modal fade"
+        id="closeService{{ request.req_id }}"
+        tabindex="-1"
+        aria-labelledby="closeServiceLabel{{ request.req_id }}"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                class="modal-title"
+                id="closeServiceLabel{{ request.req_id }}"
+              >
+                Close Service
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to close this service?
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+              <form
+                action="{{ url_for('closeService', req_id=request.req_id) }}"
+                method="POST"
+              >
+                <button type="submit" class="btn btn-danger">Close</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Modal -->
+      <div
+        class="modal fade"
+        id="editService{{ request.req_id }}"
+        tabindex="-1"
+        aria-labelledby="editServiceLabel{{ request.req_id }}"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form
+              action="{{ url_for('editService', req_id=request.req_id) }}"
+              method="POST"
+            >
+              <div class="modal-header">
+                <h5
+                  class="modal-title"
+                  id="editServiceLabel{{ request.req_id }}"
+                >
+                  Edit Service
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label
+                    for="start_date_{{ request.req_id }}"
+                    class="form-label"
+                    >Start Date:</label
+                  >
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="start_date_{{ request.req_id }}"
+                    name="start_date"
+                    value="{{ request.start_date }}"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Remarks Modal -->
+<div
+class="modal fade"
+id="editRemarks{{ request.req_id }}"
+tabindex="-1"
+aria-labelledby="editRemarksLabel{{ request.req_id }}"
+aria-hidden="true"
+>
+<div class="modal-dialog">
+  <div class="modal-content">
+    <form action="{{ url_for('edit_remarks', req_id=request.req_id) }}" method="POST">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editRemarksLabel{{ request.req_id }}">
+          Edit Remarks
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="remarks_{{ request.req_id }}" class="form-label">Remarks</label>
+          <textarea
+            class="form-control"
+            id="remarks_{{ request.req_id }}"
+            name="remarks"
+            rows="4"
+            required
+          >{{ request.remarks }}</textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+
+
+      {% endif %} {% endfor %}
+    </tbody>
+  </table>
+</div>
+{%endblock%}

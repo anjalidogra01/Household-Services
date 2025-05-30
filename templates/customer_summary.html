@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Summary{% endblock %}
+{% block style %}
+{{ super() }}
+<!-- <style>
+    body {
+        background-image: none;
+    }
+</style> -->
+{% endblock %}
+{% block content %}
+<h1 >Service Request Status for Customer ID: {{ customer.id }}</h3>
+<div class="container text-center">
+    
+    <img src="{{ url_for('service_status_chart', customer_id=customer.id) }}" alt="Service Status Chart">
+
+</div>
+{% endblock %}

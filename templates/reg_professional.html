@@ -1,0 +1,111 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+Professional Registration
+{% endblock %}
+
+{% block content %}
+<div>{% include 'messages.html' %}</div>
+<h2 class="text-center text-primary mb-4">Service Professional Signup</h2>
+<div class="container">
+  <div class="row justify-content-center">
+      <div class="col-md-6"> <!-- Change col-md-6 to your desired width -->
+          <div class="border p-4 bg-white rounded">
+  <form action="{{ url_for('reg_prof_post') }}" method="post" enctype="multipart/form-data">
+    <div class="row mb-3">
+      <label for="username" class="col-md-3 col-form-label">Username:</label>
+      <div class="col-md-9">
+        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your name">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="phone_no" class="col-md-3 col-form-label">Phone Number:</label>
+      <div class="col-md-9">
+        <input type="number" class="form-control" id="phone_no" name="phone_no" placeholder="Enter your phone number">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label for="password" class="col-md-3 col-form-label">Password:</label>
+      <div class="col-md-9">
+        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="confirmpassword" class="col-md-3 col-form-label">Confirm Password:</label>
+      <div class="col-md-9">
+        <input type="password" class="form-control" id="confirmpassword" name="confirmpassword"
+          placeholder="Enter your password">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label for="name" class="col-md-3 col-form-label">Full Name:</label>
+      <div class="col-md-9">
+        <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label for="service" class="col-md-3 col-form-label" name="service">Service Name:</label>
+      <div class="col-md-9">
+        <select name="service" class="form-select" id="service">
+          {% for service in services %}
+          {% if service.status=='Active'%}
+          <option value="{{ service.id }}">{{ service.service_name }}</option>
+          {%endif%}
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label for="experience" class="col-md-3 col-form-label">Experience (in yrs):</label>
+      <div class="col-md-9">
+        <input type="number" class="form-control" id="experience" name="experience" placeholder="Enter your experience">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label for="file" class="col-md-3 col-form-label">Attach resume (PDF):</label>
+      <div class="col-md-9">
+        <input type="file" class="form-control" name="file" id="file">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label for="address" class="col-md-3 col-form-label">Address:</label>
+      <div class="col-md-9">
+        <input type="text" class="form-control" id="address" name="address" placeholder="Enter your address"></textarea>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <label for="pincode" class="col-md-3 col-form-label">Pin Code:</label>
+      <div class="col-md-9">
+        <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Enter your pin code">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="description" class="col-md-3 col-form-label">Service Description:</label>
+      <div class="col-md-9">
+        <textarea type="text" class="form-control" id="description" name="description"
+          placeholder="Write about the service you are providing " rows="5"></textarea>
+      </div>
+    </div>
+
+
+    <div class="d-flex justify-content-center mt-4">
+      <button type="submit" class="btn btn-primary px-5" name="submit">Register</button>
+    </div>
+
+    <div class="text-center mt-3">
+      <a href="{{url_for('login')}}" class="text-warning">Login here</a>
+    </div>
+  </form>
+</div>
+</div>
+</div>
+</div>
+
+{% endblock %}

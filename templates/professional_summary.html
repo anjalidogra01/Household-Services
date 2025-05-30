@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Professional Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        
+        <!-- Ratings Section -->
+        <div class="col-md-6 text-center">
+            <h2 class="text-white">Ratings</h2>
+            <img src="{{ url_for('ratings_chart', professional_id=professional.id) }}" alt="Ratings Chart" class="img-fluid">
+            <div >
+               <span style="font-size:300%" class="text-white"> Overall Rating: </span>
+                <span style="font-size: 300%; color: yellow;" class="ms-3">  
+                    {{ professional.rating }}★
+                </span>
+            </div>
+        </div>
+
+        <!-- Services Section -->
+        <div class="col-md-6 text-center">
+            <h2 class="text-white">Services</h2>
+            <img src="{{ url_for('service_status_chart_p', professional_id=professional.id) }}" alt="Service Status Chart" class="img-fluid">
+        </div>
+
+    </div>
+</div>
+{% endblock %}

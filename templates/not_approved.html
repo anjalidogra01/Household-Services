@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+{% block title %}
+Sorry
+{% endblock %}
+
+{% block content %}
+
+
+<div class="d-flex vh-100 justify-content-center align-items-center" style="background-color: #f8f9fa;">  <!-- Light gray background for the whole page -->
+  <div class="container border text-center bg-white p-4" style="max-width: 600px;">  <!-- Centered container with limited width -->
+    <p>Professional Status: {{ professional.status }}</p>
+    <p>Service Status: {{ professional.service.status if professional.service else 'No Service' }}</p>
+
+    {% if professional.status == 'Blocked' and professional.service.status == 'Removed' %}
+      <p>The service {{ professional.service.service_name }} has been removed from the platform by the admin.</p>
+    {% elif professional.status == 'Not Approved' %}
+      <p>Sorry, Your account is not approved by the admin yet.</p>
+    {% elif professional.status == 'Blocked' %}
+      <p>Your account is blocked by the admin.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

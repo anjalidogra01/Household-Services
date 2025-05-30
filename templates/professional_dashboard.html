@@ -1,0 +1,242 @@
+{% extends 'base.html' %} {% block title %} Professional {% endblock %} {% block
+content %}
+<div>{% include 'messages.html' %}</div>
+
+{%if professional.service.status=='Removed'%}
+<div class="d-flex vh-100 justify-content-center align-items-center">
+  <div class="container border text-center bg-white p-4">
+      <p >The service {{professional.service.service_name}} has been removed from the platform by the admin.</p>
+  </div>
+</div>
+
+{%else%}
+<div class="border m-5 p-5">
+  <div class="p-3">
+    <h1>Latest Requests</h1>
+  </div>
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Customer name</th>
+          <th scope="col">Contact Phone</th>
+          <th scope="col">Location</th>
+          <th scope="col">Date Created</th>
+          <th scope="col">Start Date</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if requested_requests %}
+         {% for request in requested_requests %}
+
+        <tr>
+          <td>{{ request.req_id }}</td>
+          <td>{{ request.customer.name}}</td>
+          <td>{{ request.customer.phone_no}}</td>
+          <td>{{ request.customer.address}} | {{ request.customer.pincode}}</td>
+          <td>{{ request.date_of_req}}</td>
+          <td>{{ request.start_date}}</td>
+
+          <td>
+            <button
+              class="btn btn-warning"
+              data-bs-toggle="modal"
+              data-bs-target="#approve{{request.req_id }}"
+            >
+              Accept
+            </button>
+            <button
+              class="btn btn-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#reject{{ request.req_id }}"
+            >
+              Reject
+            </button>
+          </td>
+        </tr>
+
+        <!-- Accept Confirmation Modal -->
+        <div
+          class="modal fade"
+          id="approve{{ request.req_id}}"
+          tabindex="-1"
+          aria-labelledby="approveLabel{{request.req_id }}"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="approveLabel{{ request.req_id }}">
+                  Accept Request
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to accpept this request?
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+                <form
+                  action="{{ url_for('accept_req', req_id=request.req_id) }}"
+                  method="POST"
+                >
+                  <button type="submit" class="btn btn-primary">Accept</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reject Confirmation Modal -->
+        <div
+          class="modal fade"
+          id="reject{{ request.req_id }}"
+          tabindex="-1"
+          aria-labelledby="rejectLabel{{ request.req_id}}"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="rejectLabel{{ request.req_id }}">
+                  Confirm Rejection
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to reject this request?
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+                <form
+                  action="{{ url_for('reject_req',req_id=request.req_id) }}"
+                  method="POST"
+                >
+                  <button type="submit" class="btn btn-danger">Reject</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <tr>
+          <td colspan="6" class="text-center">No requests available</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="border m-5 p-5">
+  <div class="p-3">
+    <h1>Accepted requests</h1>
+  </div>
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Customer name</th>
+          <th scope="col">Contact Phone</th>
+          <th scope="col">Location</th>
+          <th scope="col">Start Date</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if accepted_requests %}
+        {% for request in accepted_requests %} 
+       
+        <tr>
+          <td>{{ request.req_id }}</td>
+          <td>{{ request.customer.name}}</td>
+          <td>{{ request.customer.phone_no}}</td>
+          <td>{{ request.customer.address}}</td>
+          <td>{{ request.start_date}}</td>
+          <td>{{ request.service_status}}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center">
+            No accepted requests available
+          </td>
+        </tr>
+
+        {% endif %} 
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="border m-5 p-5">
+  <div class="p-3">
+    <h1>Closed Services</h1>
+  </div>
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Customer name</th>
+          <th scope="col">Contact Phone</th>
+          <th scope="col">Location</th>
+          <th scope="col">Date Closed</th>
+          <th scope="col">Ratings</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+         {% if closed_requests %}
+         {% for request in closed_requests %}
+        <tr>
+          <td>{{ request.req_id }}</td>
+          <td>{{ request.customer.name}}</td>
+          <td>{{ request.customer.phone_no}}</td>
+          <td>{{ request.customer.address}}</td>
+          <td>{{ request.date_of_completion}}</td>
+          <td>{{ request.service_rating}}</td>
+
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center">
+            No professional requests available
+          </td>
+         
+        </tr>
+
+        {% endif %} 
+      </tbody>
+    </table>
+  </div>
+</div>
+{%endif%}
+  {% endblock %}
+

@@ -1,0 +1,27 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Admin Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        
+        <!-- Ratings Section -->
+        <div class="col-md-6 text-center">
+            <h2 class="text-white">Customer Ratings</h2>
+            <img src="{{ url_for('customer_ratings_chart') }}?v={{ cache_buster }}" alt="Ratings Chart" class="img-fluid">
+
+    
+        </div>
+
+        <!-- Services Section -->
+        <div class="col-md-6 text-center">
+            <h2 class="text-white">Services</h2>
+            <img src="{{ url_for('service_status_chart_a')}}?v={{ cache_buster }}" alt="Service Status Chart" class="img-fluid">
+        </div>
+
+    </div>
+</div>  
+
+{% endblock %}

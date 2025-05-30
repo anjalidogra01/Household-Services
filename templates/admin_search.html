@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Search{% endblock %}
+
+{% block style %}
+{{ super() }}
+
+{% endblock %}
+
+{% block content %}
+<!-- Search functionality -->
+<div>{% include 'messages.html' %}</div>
+<div class="container search-box">
+  <h1 class="mt-3">Search</h1>
+  <form method="GET" class="row g-3" action="{{ url_for('admin_search') }}">
+    <div class="col-md-4">
+      <label for="searchBy" class=" text-white form-label fs-5">Search by:</label>
+      <select id="searchBy" name="searchBy" class="form-select">
+        <option value="date" {% if searchBy=='date' %}selected{% endif %}>Date</option>
+        <option value="req_location" {% if searchBy=='req_location' %}selected{% endif %}>Service Request Location
+        </option>
+        <option value="pincode" {% if searchBy=='pincode' %}selected{% endif %}>Service Request Pincode</option>
+        <option value="professional_rating" {% if searchBy=='professional_rating' %}selected{% endif %}>Professional
+          Ratings</option>
+        <option value="professional" {% if searchBy=='professional' %}selected{% endif %}>Professional Name</option>
+        <option value="customer" {% if searchBy=='customer' %}selected{% endif %}>Customer Name</option>
+        <option value="service_status" {% if searchBy=='service_status' %}selected{% endif %}>Request Status</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="searchText" class="form-label  text-white form-label fs-5">Search Text</label>
+      <input type="text" class="form-control" id="searchText" name="searchText" value="{{ searchText }}" placeholder="{% if searchBy == 'date' %}Enter Date (DD/MM/YYYY)
+                            {% elif searchBy == 'professional' %}Enter Professional Name
+                            {% elif searchBy == 'customer' %}Enter Customer Name
+                            {% elif searchBy == 'service_status' %}Enter Service Status
+                            {% elif searchBy == 'professional_rating' %}Enter Rating (e.g., 4 or 4-5)
+                            {% elif searchBy == 'req_location' %}Enter Location (e.g., Shakti nagar)
+
+                            {% else %}Search...{% endif %}">
+    </div>
+
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+  </form>
+</div>
+
+<!-- Search Results Table -->
+<div class="container mt-5">
+  <h3 class="text-white">Search Results</h3>
+
+  {% if not results %}
+    <div class="alert alert-warning" role="alert">
+      No results found for your search.
+    </div>
+
+  {% else %}
+  {% if searchBy == 'date' %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Request ID</th>
+        <th>Professional Name</th>
+        <th>Customer Name</th>
+        <th>Date Created</th>
+        <th>Status (R/A/C)</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in results %}
+      <tr>
+        <td>{{ request.req_id }}</td>
+        <td>{{ request.professional.name }}</td>
+        <td>{{ request.customer.name }}</td>
+        <td>{{ request.date_of_req }}</td>
+        <td>{{ request.service_status }}</td>
+        <td>{{ request.service_rating if request.service_rating is not none else 'N/A' }}</td>
+      </tr>
+      {% endfor %}
+
+    </tbody>
+
+  </table>
+
+
+  {% elif searchBy == 'professional' or searchBy == 'professional_rating' %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Professional ID</th>
+        <th>Professional Name</th>
+        <th>Professional profile</th>
+        <th>Sevice name</th>
+        <th>Contact no.</th>
+        <th>Rating</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for professional in results %}
+      
+      <tr>
+        <td>{{ professional.id }}</td>
+        <td>{{ professional.name }}</td>
+        <td><a  href="{{ url_for('profile', professional_id = professional.id)}}">View profile</a>
+        </li></td>
+        <td>{{ professional.service.service_name}}</td>
+        <td>{{ professional.phone_no }}</td>
+        
+        
+        <td>{{ professional.rating if professional.rating is not none else 'N/A' }}</td>
+        <td>
+          {% if professional.status=='Approved' %}
+          <button class="btn btn-danger" data-bs-toggle="modal"
+            data-bs-target="#blockprofessional{{ professional.id }}">
+            Block
+          </button>
+          {% elif professional.status=='Not Approved' %}
+          {{ professional.status}}
+
+          {% else %}
+          {{professional.status}} |
+          <button class="btn btn-success" data-bs-toggle="modal"
+            data-bs-target="#unblockprofessional{{ professional.id }}">
+            Unblock
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+
+      <!-- professional block modal  -->
+      <div class="modal fade" id="blockprofessional{{ professional.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="blockprofessional{{ professional.id }}">
+                Block Professional
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to block this professional?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+              </button>
+              <form action="{{ url_for('block_professional', professional_id=professional.id) }}" method="POST">
+                <input type="hidden" name="searchBy" value="{{ searchBy }}">
+                <input type="hidden" name="searchText" value="{{ searchText }}">
+                <button type="submit" class="btn btn-danger">Block</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- professional unblock modal -->
+      <div class="modal fade" id="unblockprofessional{{ professional.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="unblockprofessional{{ professional.id }}">
+                Unblock Professional
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to unblock this professional?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+              </button>
+              <form action="{{ url_for('unblock_professional', professional_id=professional.id) }}" method="POST">
+                <input type="hidden" name="searchBy" value="{{ searchBy }}">
+                <input type="hidden" name="searchText" value="{{ searchText }}">
+                <button type="submit" class="btn btn-danger">Unblock</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {% endfor %}
+
+    </tbody>
+
+  </table>
+  {%if searchBy=='professional' %}
+  <h3 class="text-white">Service Requests for {{ results[0].name }}</h3>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Request ID</th>
+        <th>Customer Name</th>
+        <th>Service</th>
+        <th>Date Created</th>
+        <th>Status</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in service_requests %}
+      
+      <tr>
+        <td>{{ request.req_id }}</td>
+        <td>{{ request.customer.name }}</td>
+        <td>{{ request.service.service_name }}</td>
+        <td>{{ request.date_of_req }}</td>
+        <td>{{ request.service_status }}</td>
+        <td>{{ request.service_rating if request.service_rating is not none else 'N/A' }}</td>
+      </tr>
+      
+      {% endfor %}
+    </tbody>
+  </table>
+  {%endif%}
+
+
+
+  {% elif searchBy == 'customer' %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Customer ID</th>
+        <th>Customer Name</th>
+        <th>Contact no.</th>
+        <th>Location</th>
+        <th>Pincode</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in results %}
+      <tr>
+        <td>{{ customer.id }}</td>
+        <td>{{ customer.name }}</td>
+        <td>{{ customer.phone_no }}</td>
+        <td>{{ customer.address }}</td>
+        <td>{{ customer.pincode }}</td>
+
+        <td>
+          {% if customer.status=='Registered' %}
+          <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#blockcustomer{{ customer.id }}">
+            Block
+          </button>
+
+          {% else %} {{customer.status}} |
+          <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#unblockcustomer{{customer.id }}">
+            Unblock
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+
+
+      <!-- Block customer modal -->
+      <div class="modal fade" id="blockcustomer{{ customer.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="blockcustomer{{ customer.id }}">
+                Block Customer
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to block this customer?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+              </button>
+              <form action="{{ url_for('block_customer', customer_id=customer.id) }}" method="post">
+                <input type="hidden" name="searchBy" value="{{ searchBy }}">
+                <input type="hidden" name="searchText" value="{{ searchText }}">
+                <button type="submit" class="btn btn-danger">Block</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unblock customer modal -->
+      <div class="modal fade" id="unblockcustomer{{ customer.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="unblockcustomer{{ customer.id }}">
+                Unblock Customer
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to unblock this customer?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+              </button>
+              <form action="{{ url_for('unblock_customer', customer_id=customer.id) }}" method="post">
+                <input type="hidden" name="searchBy" value="{{ searchBy }}">
+                <input type="hidden" name="searchText" value="{{ searchText }}">
+                <button type="submit" class="btn btn-success">Unblock</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </tbody>
+  </table>
+        {%if searchBy=='customer' %}
+        <h3 class="text-white">Service Requests of {{ results[0].name }}</h3>
+        <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Request ID</th>
+        <th>Customer Name</th>
+        <th>Service</th>
+        <th>Date Created</th>
+        <th>Status</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in service_requests %}
+      {% if request.professional.status!='Blocked'%}
+      <tr>
+        <td>{{ request.req_id }}</td>
+        <td>{{ request.professional.name }}</td>
+        <td>{{ request.service.service_name }}</td>
+        <td>{{ request.date_of_req }}</td>
+        <td>{{ request.service_status }}</td>
+        <td> {{ request.service_rating if request.service_rating is not none else 'N/A' }} </td>
+      </tr>
+      {%endif%}
+      {% endfor %}
+    </tbody>
+  </table>
+  {%endif%}
+
+  {% elif searchBy == 'service_status' %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Request ID</th>
+        <th>Professional Name</th>
+        <th>Customer name</th>
+        <th>Service</th>
+        <th>Location</th>
+        <th>Date Created</th>
+        <th>Status</th>
+        <th>Ratings</th>
+
+
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in results %}
+      <tr>
+        <td>{{ request.req_id }}</td>
+        <td>{{ request.professional.name }}</td>
+        <td>{{ request.customer.name}}</td>
+        <td>{{ request.service.service_name }}</td>
+        <td>{{ request.customer.address}}</td>
+        <td>{{ request.date_of_req }}</td>
+        <td>{{ request.service_status }}</td>
+        <td>{{ request.service_rating if request.service_rating is not none else 'N/A' }}</td>
+
+      </tr>
+      {% endfor %}
+
+    </tbody>
+
+  </table>
+
+
+  {% elif searchBy == 'req_location' or searchBy == 'pincode' %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Request ID</th>
+        <th>Professional Name</th>
+        <th>Customer name</th>
+        {% if searchBy=='pincode'%}
+        <th>Pincode</th>
+        {%else%}
+        <th>Location</th>
+        {%endif%}
+
+        <th>Service</th>
+        <th>Date Created</th>
+        <th>Status</th>
+        <th>Ratings</th>
+
+
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in results %}
+      <tr>
+        <td>{{ request.req_id }}</td>
+        <td>{{ request.professional.name }}</td>
+        <td>{{ request.customer.name}}</td>
+
+        {% if searchBy=='pincode'%}
+        <td>{{ request.customer.pincode}}</td>
+        {%else%}
+        <td>{{ request.customer.address}}</td>
+        {%endif%}
+
+        <td>{{ request.service.service_name }}</td>
+        <td>{{ request.date_of_req }}</td>
+        <td>{{ request.service_status }}</td>
+        <td>{{ request.service_rating if request.service_rating is not none else 'N/A' }}</td>
+
+      </tr>
+      {% endfor %}
+
+    </tbody>
+
+  </table>
+
+
+  {% endif %}
+  {% endif %}
+</div>
+
+{% endblock %}

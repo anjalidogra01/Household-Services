@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+{% block title %}Admin{% endblock %}
+{% block content%}
+
+
+<!-- Services -->
+<div>{% include 'messages.html' %}</div>
+<div class="border m-5 p-5">
+  <div class="p-3 ">
+    <h1>Service</h1>
+  </div>
+
+
+
+  <div class="container table-container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Service name</th>
+          <th scope="col">Base price</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% if services|selectattr('status', 'equalto', 'Active')|list %}
+        {% for service in services %}
+        {% if service.status == 'Active' %}
+        <tr>
+          <td>{{ service.id }}</td>
+          <td>{{ service.service_name }}</td>
+          <td>{{ service.base_price }}</td>
+          <td>
+            <p>
+              <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#viewModal{{ service.id }}">
+                View
+              </button>
+              <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}">
+                Edit
+              </button>
+              <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ service.id }}">
+                Delete
+              </button>
+            </p>
+          </td>
+        </tr>
+
+        <!-- View Modal -->
+        <div class="modal fade" id="viewModal{{ service.id }}" tabindex="-1"
+          aria-labelledby="viewModalLabel{{ service.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="viewModalLabel{{ service.id }}">
+                  Service Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p><strong>Service Name:</strong> {{ service.service_name }}</p>
+                <p><strong>Base Price:</strong> {{ service.base_price }}</p>
+                <p>
+                  <strong>Description:</strong> {{ service.service_description }}
+                </p>
+                <p><strong>Time Required:</strong> {{ service.time }} minutes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal{{ service.id }}" tabindex="-1"
+          aria-labelledby="editModalLabel{{ service.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel{{ service.id }}">
+                  Edit Service
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form action="/edit_service/{{ service.id }}" method="POST">
+                  <div class="mb-3">
+                    <label for="service_name" class="form-label">Service Name</label>
+                    <input type="text" class="form-control" id="service_name" name="service_name"
+                      value="{{ service.service_name }}" required />
+                  </div>
+                  <div class="mb-3">
+                    <label for="base_price" class="form-label">Base Price</label>
+                    <input type="number" class="form-control" id="base_price" name="base_price"
+                      value="{{ service.base_price }}" required />
+                  </div>
+                  <div class="mb-3">
+                    <label for="time" class="form-label">Time Required (in minutes)</label>
+                    <input type="number" class="form-control" id="time" name="time" value="{{ service.time }}"
+                      required />
+                  </div>
+                  <div class="mb-3">
+                    <label for="service_description" class="form-label">Description</label>
+                    <textarea class="form-control" id="service_description" name="service_description" rows="5">
+{{ service.service_description }}</textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label for="time" class="form-label">Image(URL)</label>
+                    <input type="text" class="form-control" id="image_url" name="image_url"
+                      value="{{ service.image_url }}" required />
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal{{ service.id }}" tabindex="-1"
+          aria-labelledby="deleteModalLabel{{ service.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ service.id }}">
+                  Delete Service
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to delete the service "{{
+                service.service_name }}"?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+                <a href="/delete_service/{{ service.id }}" class="btn btn-danger">Delete</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <tr>
+          <td colspan="4" class="text-center">No active services available.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add Service Modal -->
+
+  <div class="text-center">
+    <button type="button" class="btn-add" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+      + Add Service
+    </button>
+  </div>
+
+  <!-- The Modal -->
+  <div class="modal fade" id="addServiceModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h5 class="modal-title">Add Service</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- Modal Body (Form) -->
+        <div class="modal-body">
+          <form action="/add_service" method="POST">
+            <div class="mb-3">
+              <label for="service_name" class="form-label">Service Name</label>
+              <input type="text" class="form-control" id="service_name" name="service_name" required />
+            </div>
+            <div class="mb-3">
+              <label for="base_price" class="form-label">Base Price</label>
+              <input type="number" class="form-control" id="base_price" name="base_price" required />
+            </div>
+            <div class="mb-3">
+              <label for="time" class="form-label">Time Required(in minutes)</label>
+              <input type="number" class="form-control" id="time" name="time" required />
+            </div>
+            <div class="mb-3">
+              <label for="service_description" class="form-label">Description</label>
+              <textarea type="text" class="form-control" id="service_description" name="service_description"
+                rows="5"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="time" class="form-label">Image(URL)</label>
+              <input type="text" class="form-control" id="image_url" name="image_url" required />
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+              <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Professional Requests -->
+
+
+<div class="border m-5 p-5">
+  <div class=" p-3 ">
+    <h1>Professionals Requests</h1>
+  </div>
+
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Name</th>
+          <th scope="col">Experience(in yrs.)</th>
+          <th scope="col">Service Name</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {%if pending_professionals%}
+        {% for professional in pending_professionals %}
+        <tr>
+          <td>{{ professional.id }}</td>
+          <td>{{ professional.name }}</td>
+          <td>{{ professional.experience }}</td>
+          <td>{{ professional.service.service_name}}</td>
+
+          <td>
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#viewInfo{{ professional.id }}">
+              View
+            </button>
+            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#approveModal{{ professional.id }}">
+              Approve
+            </button>
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ professional.id }}">
+              Reject
+            </button>
+          </td>
+        </tr>
+
+        <!-- <----View_Modal--->
+
+        <div class="modal fade" id="viewInfo{{ professional.id }}" tabindex="-1"
+          aria-labelledby="viewModalLabel{{professional.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="viewModalLabel{{ professional.id }}">
+                 Professional Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p><strong>Id:</strong> {{ professional.id }}</p>
+                <p><strong>Name:</strong> {{ professional.name }}</p>
+                <p><strong>Username:</strong> {{ professional.username }}</p>
+                <p>
+                  <strong>Description:</strong> {{ professional.description }}
+                </p>
+                <p><strong>Address</strong> {{ professional.address }}</p>
+                <p><strong>Pincode</strong> {{ professional.pincode}}</p>
+                <p>
+                  <a href="{{ url_for('static', filename='uploads/' + professional.resume_path) }}" target="_blank"
+                    class="btn btn-primary">View Resume</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approve Confirmation Modal -->
+        <div class="modal fade" id="approveModal{{ professional.id }}" tabindex="-1"
+          aria-labelledby="approveModalLabel{{ professional.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="approveModalLabel{{ professional.id }}">
+                  Confirm Approval
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to approve {{ professional.name }}?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+                <form action="{{ url_for('approve_professional', professional_id=professional.id) }}" method="POST">
+                  <button type="submit" class="btn btn-primary">Approve</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+  </div>
+  <!-- Reject Confirmation Modal -->
+  <div class="modal fade" id="rejectModal{{ professional.id }}" tabindex="-1"
+    aria-labelledby="rejectModalLabel{{ professional.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectModalLabel{{ professional.id }}">
+            Confirm Rejection
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to reject {{ professional.name }}?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <form action="{{ url_for('reject_professional', professional_id=professional.id) }}" method="POST">
+            <button type="submit" class="btn btn-danger">Reject</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  {% endfor %}
+
+  {% else %}
+  <tr>
+    <td colspan="5" class="text-center">No professional requests available</td>
+  </tr>
+  {% endif %}
+  </tbody>
+  </table>
+</div>
+</div>
+
+
+<!-- service requests -->
+<div class="border m-5 p-5">
+  <div class="p-3 ">
+    <h1>Service Requests</h1>
+  </div>
+
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Service Id</th>
+          <th scope="col">Assigned Professional</th>
+          <th scope="col">Date Created</th>
+          <th scope="col">Service Name</th>
+          <th scope="col">Status</th>
+        </tr>
+      <tbody>
+        {% for request in requests %}
+        {% if request.professional.status== 'Approved' %}
+          <tr>
+            <td>{{ request.req_id }}</td>
+            <td>{{ request.professional.name }}</td>
+            <td>{{ request.date_of_req }}</td>
+            <td>{{ request.service.service_name }}</td>
+            <td>{{ request.service_status }}</td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+      
+
+      </tbody>
+      </thead>
+    </table>
+  </div>
+  {% endblock %}
+</div>

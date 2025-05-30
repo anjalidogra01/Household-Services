@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Professional search{% endblock %}
+
+{% block style %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<!-- Search functionality -->
+<div class="container search-box">
+    <h1 class="mt-2">Search</h1>
+    <form method="GET" class="row g-3" action="{{ url_for('professional_search', professional_id=professional_id) }}">
+        <div class="col-md-4">
+            <label for="searchBy" class="form-label text-white">Search by</label>
+            <select id="searchBy" name="searchBy" class="form-select">
+                <option value="date" {% if searchBy == 'date' %}selected{% endif %}>Date</option>
+                <option value="location" {% if searchBy == 'location' %}selected{% endif %}>Location</option>
+                <option value="pincode" {% if searchBy == 'pincode' %}selected{% endif %}>Pin Code</option>
+                <option value="name" {% if searchBy == 'name' %}selected{% endif %}>Customer Name</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="searchText" class="form-label text-white">Search Text</label>
+            <input type="text" class="form-control" id="searchText" name="searchText" value="{{ searchText }}"
+                placeholder="{% if searchBy == 'date' %}Enter Date (DD/MM/YYYY){% else %}Search...{% endif %}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+</div>
+
+<!-- Search Results Table -->
+<div class="container table-custom">
+    <h3 class="text-white mt-3">Search Results</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer Name</th>
+                <th>Contact Phone</th>
+                <th>Location</th>
+                <th>Pincode</th>
+                <th>Date Created</th>
+                <th>Start Date</th>
+                <th>Date Closed</th>
+                <th>Status</th>
+                <th>Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if customers|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="10">No results found.</td>
+                </tr>
+            {% else %}
+                {% for customer in customers %}
+                    {% for request in customer.requests %}
+                        {% if request.professional_id == professional_id %}
+                            <tr>
+                                <td>{{ request.req_id }}</td>
+                                <td>{{ customer.name }}</td>
+                                <td>{{ customer.phone_no }}</td>
+                                <td>{{ customer.address }}</td>
+                                <td>{{ customer.pincode }}</td>
+                                <td>{{ request.date_of_req }}</td>
+                                <td>{{ request.start_date }}</td>
+                                <td>{{ request.date_of_completion if request.date_of_completion else 'N/A' }}</td>
+                                <td>{{ request.service_status }}</td>
+                                <td>{{ request.service_rating if request.service_rating is not none else 'N/A' }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

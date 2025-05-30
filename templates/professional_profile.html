@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %} Professional {% endblock %}
+
+{% block content %}
+<div>{% include 'messages.html' %}</div>
+<div class="container border mt-5 p-5">
+    <h1>{{ professional.name }}</h1>
+    <p class="text-white"><strong>Username:</strong> {{ professional.username }}</p>
+    <p class="text-white"><strong>Address:</strong> {{ professional.address }}</p>
+    <p class="text-white"><strong>Phone no. :</strong> {{ professional.phone_no }}</p>
+    <p class="text-white"><strong>Pincode:</strong> {{ professional.pincode }}</p>
+    <p class="text-white"><strong>Service:</strong> {{ professional.service.service_name }}</p>
+    <p class="text-white"><strong>Price:</strong> {{ professional.price }}</p>
+    <p class="text-white"><strong>Experience:</strong> {{ professional.experience }}</p>
+    <p class="text-white"><strong>Service Description:</strong> {{ professional.description }}</p>
+    <p class="text-white"><strong>Average Rating:</strong> {{ professional.rating if professional.rating is not none else 'N/A' }}</p>
+
+    <p class="text-white"> <strong>Resume:</strong>
+        <a
+          href="{{ url_for('static', filename='uploads/' + professional.resume_path) }}"
+          target="_blank"
+        
+          >Click here</a
+        >
+      </p>
+
+    
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        Edit Profile
+    </button>
+
+    
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ url_for('edit_professional_profile', professional_id=professional.id) }}" method="POST">
+
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ professional.username }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone_no" class="form-label">Phone number:</label>
+                            <input type="number" class="form-control" name="phone_no" id="phone_no" value="{{ professional.phone_no }}"required>
+                          </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="address" name="address" value="{{ professional.address }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Pincode</label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" value="{{ professional.pincode }}" required>
+                        </div>
+                     
+                        <div class="mb-3">
+                            <label for="experience" class="form-label">Experience</label>
+                            <input type="text" class="form-control" id="experience" name="experience" value="{{ professional.experience }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Service Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ professional.description }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="price" name="price" value="{{ professional.price }}" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="container mt-2 p-4 d-flex align-items-center">
+    <h2 class="text-white mb-0">Average Rating :    </h2>
+    <p>
+    {% if professional.rating %}
+       <span style="font-size:300%;color:yellow;" class="ms-5 ml-5">  {{professional.rating}}★</span>
+   
+    {% endif %}
+</p>
+</div>
+
+
+<div class="container border mt-5 p-5">
+    <h3 class="text-white text-center mb-4 fs-10">Customer Remarks</h3>
+
+    {% if requests %}
+    <div class="row d-flex flex-wrap">
+        {% for request in requests %}
+        <div class="col-md-6 col-lg-4 mb-4 d-flex">
+            <div class="border p-3 text-white flex-fill">
+                <p><strong>Customer Name:</strong> {{ request.customer.name }}</p>
+                <p><strong>Remarks:</strong> {{ request.remarks }}</p>
+                <p><strong>Rating:</strong> {{ request.service_rating }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-white text-center fw-bold"><strong>No remarks available.</strong></p>
+    {% endif %}
+</div>
+
+{% endblock %}
